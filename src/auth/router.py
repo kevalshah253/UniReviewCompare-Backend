@@ -1,8 +1,15 @@
-from fastapi import  APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException
+from auth.model import User ,LoginInput
+from auth import service
+
+router = APIRouter(tags=["auth"])
 
 
-router = APIRouter(tags=['auth'])
+@router.post("/signup/")
+async def register_user(user: User):
+    return await service.signup(user)
 
-@router.get("/")    
-async def root():
-    return {"Status":"ok"}
+
+@router.post("/login/")
+async def login_user(user: LoginInput):
+    return await service.login(user)
