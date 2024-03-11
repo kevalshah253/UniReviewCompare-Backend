@@ -7,10 +7,7 @@ load_dotenv()
 
 class Config:
     MONGO_URI = os.getenv("MONGODB_URI")
-
-
-class Constant:
-    ACCESS_TOKEN_EXPIRE_HOURS = 24
-    SECRET_KEY = "fastAPI"
-    ALGORITHM = "HS256"
-    ACCESS_TOKEN_EXPIRE_HOURS = 48
+    ACCESS_TOKEN_EXPIRE_HOURS= os.getenv("ACCESS_TOKEN_EXPIRE_HOURS")
+    SECRET_KEY=os.getenv("SECRET_KEY")
+    ALGORITHM=os.getenv("ALGORITHM")
+    ACCESS_TOKEN_EXPIRE_HOURS= os.getenv("ACCESS_TOKEN_EXPIRE_HOURS")
