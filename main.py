@@ -3,6 +3,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.auth.router import router as auth_router
+from src.university.router import router as uni_router
 
 # setup loggers
 logging.config.fileConfig("src/logging.conf", disable_existing_loggers=False)
@@ -17,6 +18,7 @@ logger = logging.getLogger(
 
 app = FastAPI(docs_url="/docs", openapi_url="/docs/openapi.json")
 app.include_router(auth_router, prefix="/v1")
+app.include_router(uni_router, prefix="/v1")
 
 
 app.add_middleware(
