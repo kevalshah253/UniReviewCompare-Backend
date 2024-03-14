@@ -43,6 +43,14 @@ class ResetPasswordOtpInput(BaseModel):
     new_password:constr(min_length=8, max_length=50) # type: ignore
 
 class UpdateProfileInput(BaseModel):
-    email: Optional[EmailStr]
-    name: Optional[str]
-    phone: Optional[constr(min_length=10, max_length=10)] # type: ignore
+    name: Optional[str] = None
+    phone_number: Optional[str] = None
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "John Doe",
+                "phone_number": "123-456-7890",
+                "email": "test@test.com"
+            }
+        }

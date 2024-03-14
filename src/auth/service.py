@@ -35,7 +35,7 @@ async def login(user):
         user.password, existing_user["password"]
     ):
         raise HTTPException(status_code=401, detail="Invalid email or password")
-    access_token_expires = timedelta(hours=Config.ACCESS_TOKEN_EXPIRE_HOURS)
+    access_token_expires = timedelta(hours=int(Config.ACCESS_TOKEN_EXPIRE_HOURS))
     access_token = create_access_token(
         data={"sub": str(existing_user["_id"])}, expires_delta=access_token_expires
     )
@@ -92,40 +92,32 @@ async def reset_password_after_otp(email,new_password):
     return {"message": "Password reset successful"} 
 
 
-async def update_profile(new_email,new_phone,new_name,user):
-    update_query = {}
-    update_message = "Profile not updated"
-    if new_email:
-        if new_email != user.get("email"):
-            existing_user_with_email = await user_collection.find_one({"email": new_email})
-            if existing_user_with_email:
-                raise HTTPException(status_code=400, detail="Email already registered")
-            else:
-                update_query["email"] = new_email
-                update_message = "Profile updated successfully"
+def user_helper(user) -> dict:
+    return {
+        "id": str(user["_id"]),
+        "name": user.get("name"),
+        "phone_number": user.get("phone_number"),
+        "email": user.get("email"),
+    }
 
-    if new_phone:
-        if new_phone != user.get("phone"):
-            existing_user_with_phone = await user_collection.find_one({"phone": new_phone})
-            if existing_user_with_phone:
-                raise HTTPException(status_code=400, detail="Phone number already registered")
-            else:
-                update_query["phone"] = new_phone
-                update_message = "Profile updated successfully"
+async def update_profile(update_profile,user):
+    user_data = update_profile.dict(exclude_none=True)
+    if len(user_data) >= 1:
+        update_result = await user_collection.update_one({"_id": ObjectId(user["_id"])}, {"$set": user_data})
 
-    if new_name:
-        if new_name != user.get("name"):
-            update_query["name"] = new_name
-            update_message = "Profile updated successfully"
-
-    if update_query:
-        await user_collection.update_one({"_id": ObjectId(user['_id'])}, {"$set": update_query})
-    return {"message": update_message}
+        if update_result.modified_count == 1:
+            if (updated_user := await user_collection.find_one({"_id": ObjectId(user["_id"])})) is not None:
+                return user_helper(updated_user)
+    
+    if (existing_user := await user_collection.find_one({"_id": ObjectId(user["_id"])})) is not None:
+        return user_helper(existing_user)
+    else:
+        raise HTTPException(status_code=404, detail=f"User {id} not found")
 
 
 async def profile(user): 
-    user = await user_collection.find_one({"_id": user["_id"]})    
+    user = await user_collection.find_one({"_id": user["_id"]}) 
     if user:
-        return {"email":user['email'],"name":user['name'],"phone":user['phone']} 
+        return {"email":user.get('email'),"name":user.get('name'),"phone":user.get('phone')} 
     else:
         return {"message": "User not found"}
